@@ -1,6 +1,7 @@
 # modules
 node_modules
 bun.lock
+package-lock.json
 
 # stores
 v1
