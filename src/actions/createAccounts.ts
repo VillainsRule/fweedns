@@ -168,7 +168,7 @@ const createAccount = async () => {
                 }
 
                 console.error('failed to get cookie after activation');
-                fs.writeFileSync(path.join(import.meta.dirname, 'cookie_error.html'), await cookieReq.text());
+                fs.writeFileSync(path.join(import.meta.dirname, 'cookie_error.html'), text);
                 break;
             }
 

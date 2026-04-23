@@ -58,17 +58,21 @@ const addSubdomain = async (ip: string, logPath: string) => {
 
         const text = await req.text() as string;
 
-        if (text.includes('The security code was incorrect, please try again.')) console.log(red('- captcha failed, wtf.'));
-        else if (text.includes('You have no more subdomain capacity allocated.') || text.includes('<TITLE>Premium memberships</TITLE>')) {
+        if (text.includes('The security code was incorrect, please try again.')) {
+            console.log(red('- captcha failed, wtf.'));
+        } else if (text.includes('You have no more subdomain capacity allocated.') || text.includes('<TITLE>Premium memberships</TITLE>')) {
             console.log(red('- account has no more capacity, skipping'));
             accountDB.maxOutNow(account.email);
-        } else if (text.includes('Remember Me!</font>')) console.log(yellow('> account is not logged in, skipping: ' + account.email));
-        else if (text.includes('Locked Account')) {
+        } else if (text.includes('Remember Me!</font>')) {
+            console.log(yellow('> account is not logged in, skipping: ' + account.email));
+        } else if (text.includes('Locked Account')) {
             console.log(orange('* account is LOCKED. boo. josh spoil sport. ' + account.email));
             accountDB.delete(account.email);
         } else if (text.includes('Invalid UserID/Pass')) {
             console.log(orange('* account was DELETED. boo. josh spoil sport. ' + account.email));
             accountDB.delete(account.email);
+        } else if (text.includes('ERROR: The requested URL could not be retrieved')) {
+            console.log(red('- freedns\'s server failed to respond'));
         } else if (text.includes('<TITLE>Subdomains</TITLE>')) {
             console.log(green(`+ ${subdomain}.${domain.domain}`));
             accountDB.incrementDomains(account.email);
