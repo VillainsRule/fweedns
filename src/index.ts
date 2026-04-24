@@ -9,18 +9,17 @@ const yellow = (text: string) => `\x1b[33m${text}\x1b[0m`;
 e.on('cancel', () => process.exit(0))
 
 const { action } = await e.prompt({
-    type: 'select',
+    type: 'autocomplete',
     name: 'action',
     message: 'whatcha wanna do?',
     choices: [
         { name: 'stats', message: 'view statistics' },
-        { name: 'createAccounts', message: 'create email-verified accounts' },
-        { name: 'scrapeDomains', message: 'scrapes & saves all public domains' },
-        { name: 'addSubdomains', message: 'add subdomains to existing accounts' },
-        { name: 'checkAccounts', message: 'checks for locked or deleted accounts' },
-        { name: 'cleanupDB', message: 'cleanup accounts with no cookies' }
+        { name: 'createAccounts', message: 'create accounts' },
+        { name: 'scrapeDomains', message: 'scrape domains' },
+        { name: 'addSubdomains', message: 'add subdomains' },
+        { name: 'checkAccounts', message: 'check accounts' }
     ]
-}) as { action: 'stats' | 'createAccounts' | 'scrapeDomains' | 'addSubdomains' | 'checkAccounts' | 'cleanupDB' }
+}) as { action: 'stats' | 'createAccounts' | 'scrapeDomains' | 'addSubdomains' | 'checkAccounts' }
 
 if (action === 'stats') {
     console.log('');
@@ -54,5 +53,3 @@ if (action === 'checkAccounts') {
 
     await import('./actions/checkAccounts').then(module => module.default(doDelete.doDelete));
 }
-
-if (action === 'cleanupDB') accountDB.accounts.forEach((acc) => !acc.cookie && accountDB.delete(acc.email));

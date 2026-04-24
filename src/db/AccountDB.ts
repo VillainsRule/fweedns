@@ -21,6 +21,8 @@ class AccountDB {
         const data = fs.readFileSync(accountPath, 'utf-8')
         this.accounts = JSON.parse(data) as Account[];
 
+        this.cleanup();
+
         const updateAccounts = () => fs.writeFileSync(accountPath, JSON.stringify(this.accounts, null, 2), 'utf-8');
 
         setInterval(() => updateAccounts(), 10_000).unref();
@@ -60,6 +62,10 @@ class AccountDB {
         const filteredAccounts = this.accounts.filter(acc => acc.email !== email)
         if (this.accounts.length === filteredAccounts.length) console.error(`[remove] account "${email}" not found`)
         else this.accounts = filteredAccounts;
+    }
+
+    cleanup() {
+        this.accounts = this.accounts.filter(acc => acc.cookie);
     }
 }
 
