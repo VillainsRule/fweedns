@@ -7,7 +7,7 @@
 <h2 align='center'>usage</h2>
 
 1. `git clone https://github.com/VillainsRule/fweedns && cd fweedns`
-2. `bun install`
+2. `bun install` (bun required for `proxy` option)
 3. `cp .env.example .env && nano .env` 
 3. `bun .`
 
