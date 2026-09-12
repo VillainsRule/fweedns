@@ -31,7 +31,7 @@ DEVICE = (
     else torch.device("cpu")
 )
 
-def solve_batch(image_paths, checkpoint="checkpoints/best_9761.pt"):
+def solve_batch(image_paths, checkpoint="checkpoints/best.pt"):
     model = CRNN().to(DEVICE)
     model.load_state_dict(torch.load(checkpoint, map_location=DEVICE, weights_only=True))
     model.eval()

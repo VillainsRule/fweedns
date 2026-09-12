@@ -9,25 +9,28 @@ import argparse
 import time
 from PIL import Image
 
-CHARSET_NO_BLANK = CHARSET
-NUM_CLASSES = len(CHARSET_NO_BLANK) + 1
-BLANK_IDX = len(CHARSET_NO_BLANK)
+CHARSET_WITH_BLANK = CHARSET + "_"
+NUM_CLASSES = len(CHARSET_WITH_BLANK) + 1
 
-char2idx = {c: i for i, c in enumerate(CHARSET_NO_BLANK)}
-idx2char = {i: c for c, i in char2idx.items()}
+char2idx_new = {c: i for i, c in enumerate(CHARSET_WITH_BLANK)}
+idx2char_new = {i: c for c, i in char2idx_new.items()}
 
-def encode(label):
-    return [char2idx[c] for c in label.upper()]
+def encode_with_blank(label):
+    return [char2idx_new[c] for c in label.upper()]
 
-def decode(indices):
+def decode_with_blank(indices):
     result = []
     prev = None
     for i in indices:
-        if i == BLANK_IDX:
+        if i == len(CHARSET_WITH_BLANK):
+            prev = None
+            continue
+        char = idx2char_new.get(i, '')
+        if char == '_':
             prev = None
             continue
         if i != prev:
-            result.append(idx2char[i])
+            result.append(char)
         prev = i
     return "".join(result)
 
@@ -37,15 +40,16 @@ class CaptchaDatasetWithBlanks(CaptchaDataset):
         img = Image.open(path).convert("RGB")
         if self.transform:
             img = self.transform(img)
-        encoded = encode(label)
+        encoded = encode_with_blank(label)
         return img, torch.tensor(encoded, dtype=torch.long), len(encoded)
 
 def decode_batch(preds_t, label_cat, lengths):
     correct = 0
     offset = 0
     for i, length in enumerate(lengths):
-        pred_str = decode(preds_t[i].tolist())
-        true_str = "".join(idx2char[l.item()] for l in label_cat[offset:offset+length])
+        pred_str = decode_with_blank(preds_t[i].tolist())
+        true_str = "".join(idx2char_new[l.item()] for l in label_cat[offset:offset+length])
+        true_str = true_str.replace('_', '')
         offset += length
         if pred_str == true_str:
             correct += 1
@@ -66,6 +70,8 @@ else:
     DEVICE = torch.device("cpu")
 
 print(f"Device: {DEVICE}")
+print(f"Charset: {CHARSET_WITH_BLANK}")
+print(f"NUM_CLASSES: {NUM_CLASSES}")
 
 samples = load_samples(args.caps)
 print(f"Loaded {len(samples)} samples")
@@ -75,13 +81,13 @@ train_size = len(samples) - val_size
 train_raw, val_raw = random_split(samples, [train_size, val_size], generator=torch.Generator().manual_seed(42))
 
 train_ds = CaptchaDatasetWithBlanks(list(train_raw), get_train_transform())
-val_ds = CaptchaDatasetWithBlanks(list(val_raw), get_val_transform())
+val_ds   = CaptchaDataset(list(val_raw),   get_val_transform())
 
 train_loader = DataLoader(train_ds, batch_size=args.batch, shuffle=True,  collate_fn=collate, num_workers=0)
 val_loader   = DataLoader(val_ds,   batch_size=args.batch, shuffle=False, collate_fn=collate, num_workers=0)
 
 model = CRNN().to(DEVICE)
-ctc = nn.CTCLoss(blank=BLANK_IDX, reduction="mean", zero_infinity=True)
+ctc = nn.CTCLoss(blank=len(CHARSET_WITH_BLANK), reduction="mean", zero_infinity=True)
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
