@@ -26,7 +26,18 @@ running any of these at the same time tends to corrupt the DB.
 <br><br>
 <h2 align='center'>captchas</h2>
 
-the captcha solver is bundled as a released onnx file; i have no interest in releasing the trainer or dataset at the moment. it solves at a roughly 87% success rate, which will hopefully be improved over time.
+the captcha solver is prebundled as an onnx file, and the training data is in [./train](./train/). here's what stuff is:
+
+- `caps` - about 1,000 captcha images that should be correctly labeled
+- `v1` - older training code that created the first version of the solver; it has lower accuracy and is not recommended for use
+- `v2` - newer training code that created the current version of the solver; it has higher accuracy and is recommended for use
+    - `train.py` - the main training loop; it will train the model on the training data and save the output to `./checkpoints/best.pt`
+    - `evaluate.py` - evaluates the current solver on the training data to see how many it gets corrected
+        - this is NOT a measure of overall modal performance, only a measure of regression
+        - even if you add more samples to `caps`, the model may regress. it's recomended that, if you make changes to the model that improve it, you commit it to git so that you may revert if your next edits regress.
+    - `export.py` - exports the best checkpoint to an onnx file for use in the main program
+
+if you want to work on the model in the future, it is notoriously bad at repeating letters. start there!
 
 <br><br>
 <h2 align='center'>account creation</h2>

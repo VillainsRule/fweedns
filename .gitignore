@@ -3,7 +3,7 @@ node_modules
 bun.lock
 
 # stores
-v1
+src/db/v1
 .env
 
 # logs
@@ -11,6 +11,11 @@ bannedRegis
 failedCaps
 logs
 *.html
+
+# training
+__pycache__
+crnn.onnx
+crnn.onnx.data
 
 # mac cache
 .DS_Store
